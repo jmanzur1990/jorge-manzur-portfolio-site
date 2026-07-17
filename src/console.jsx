@@ -23,7 +23,7 @@ function useTypewriter(text, cps = 320) {
 
 export function ConsoleWindow({ project }) {
   if (!project) return null;
-  const bootText = useMemo(() => buildBootText(project), [project.slug]);
+  const bootText = useMemo(() => buildBootText(project), [project]);
   const [shown, done] = useTypewriter(bootText, 280);
   const [showPreview, setShowPreview] = useState(false);
   const outRef = useRef(null);
@@ -41,7 +41,7 @@ export function ConsoleWindow({ project }) {
     return undefined;
   }, [done, project.slug]);
 
-  const previewSrcDoc = useMemo(() => buildPreviewSrcDoc(project), [project.slug]);
+  const previewSrcDoc = useMemo(() => buildPreviewSrcDoc(project), [project]);
   const safeLiveUrl = getSafeHttpsUrl(project.liveUrl);
 
   return (
@@ -89,7 +89,7 @@ function buildBootText(p) {
     "",
     "#prompt[jorge@deploy ~]$# cd /var/www/" + p.slug,
     "#prompt[jorge@deploy " + p.slug + "]$# git pull origin main",
-    "#dimFrom #pathgithub.com:jmanzur/" + p.slug + "#path",
+    "#dimFrom #path" + p.repoUrl.replace(/^https:\/\//, "") + "#path",
     "   a31fde2..7c9b002  main -> origin/main",
     "Updating a31fde2..7c9b002  Fast-forward#dim",
     "",

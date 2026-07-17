@@ -2,6 +2,21 @@
 import { useMemo } from "react";
 import { PORTFOLIO_DATA } from "./data.js";
 
+// Parses a YYYY-MM-DD date-only ISO string and formats it in Spanish,
+// pinned to UTC throughout so no local timezone offset (e.g. UTC-6 in
+// Tegucigalpa) can shift the displayed day.
+function formatDateEs(iso) {
+  const [year, month, day] = iso.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const formatted = new Intl.DateTimeFormat("es", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+  return formatted.replace(/ de /g, " · ").replace(/^(\w)/, (c) => c.toUpperCase());
+}
+
 export function HeroWindow() {
   const d = PORTFOLIO_DATA.hero;
   return (
@@ -60,11 +75,15 @@ export function AboutWindow() {
 
 export function ProjectsWindow({ onSelect }) {
   const d = PORTFOLIO_DATA.projects;
+  const years = d.map((p) => Number(p.year));
+  const yearRange = years.length
+    ? `${Math.min(...years)} — ${Math.max(...years)}`
+    : "";
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
         <div>
-          <div className="kicker accent">Selección · 2022 — 2025</div>
+          <div className="kicker accent">Selección · {yearRange}</div>
           <h2 className="display med">Proyectos.</h2>
         </div>
         <span className="mono muted">{d.length.toString().padStart(2, "0")} casos · click para conectar →</span>
@@ -109,7 +128,7 @@ export function BlogWindow({ onSelect }) {
           style={{ cursor: "default" }}>
             <div className="post-head">
               <span className="post-kicker">{p.kicker}</span>
-              <span className="post-date">{p.date}</span>
+              <span className="post-date">{formatDateEs(p.date)}</span>
             </div>
             <h3 className="post-title">{p.title}</h3>
             <p className="post-excerpt">{p.excerpt}</p>
@@ -235,7 +254,7 @@ export function PostWindow({ post, onPrev, onNext, hasPrev, hasNext }) {
           <div className="notes-meta">
             <span>Por Jorge Manzur</span>
             <span className="sep">·</span>
-            <span>{post.date}</span>
+            <span>{formatDateEs(post.date)}</span>
             <span className="sep">·</span>
             <span>{post.readMin} min de lectura</span>
             <span className="sep">·</span>
@@ -243,17 +262,7 @@ export function PostWindow({ post, onPrev, onNext, hasPrev, hasNext }) {
           </div>
         </header>
 
-        <div className="notes-body">
-          {post.body && post.body.map((block, i) => {
-            if (block.type === "quote") {
-              return <blockquote key={i} className="notes-quote">{block.text}</blockquote>;
-            }
-            const firstParaIdx = post.body.findIndex((b) => b.type === "p");
-            const isFirst = i === firstParaIdx;
-            return <p key={i} className={isFirst ? "first" : ""}>{block.text}</p>;
-          })}
-          {!post.body && <p className="first">{post.excerpt}</p>}
-        </div>
+        <div className="notes-body" dangerouslySetInnerHTML={{ __html: post.bodyHtml }} />
 
         <div className="notes-end">FIN</div>
       </div>
@@ -280,14 +289,9 @@ export function PostWindow({ post, onPrev, onNext, hasPrev, hasNext }) {
 }
 
 function countWords(post) {
-  if (!post.body) return (post.excerpt || "").split(/\s+/).filter(Boolean).length;
-  return post.body.reduce(
-    (acc, b) => acc + String(b.text || "").split(/\s+/).filter(Boolean).length,
-    0,
-  );
+  return (post.bodyText || "").split(/\s+/).filter(Boolean).length;
 }
 
 function countChars(post) {
-  if (!post.body) return (post.excerpt || "").length;
-  return post.body.reduce((acc, b) => acc + String(b.text || "").length, 0);
+  return (post.bodyText || "").length;
 }
