@@ -1,6 +1,6 @@
 // windows.jsx — content of each window
 import { useMemo } from "react";
-import { PORTFOLIO_DATA } from "./data.js";
+import { usePortfolioData } from "./portfolio-data.jsx";
 
 // Parses a YYYY-MM-DD date-only ISO string and formats it in Spanish,
 // pinned to UTC throughout so no local timezone offset (e.g. UTC-6 in
@@ -18,7 +18,7 @@ function formatDateEs(iso) {
 }
 
 export function HeroWindow() {
-  const d = PORTFOLIO_DATA.hero;
+  const d = usePortfolioData().hero;
   return (
     <div>
       <div className="kicker accent" style={{ marginBottom: 14 }}>
@@ -54,7 +54,7 @@ export function HeroWindow() {
 }
 
 export function AboutWindow() {
-  const d = PORTFOLIO_DATA.about;
+  const d = usePortfolioData().about;
   return (
     <div>
       <div className="kicker" style={{ marginBottom: 10 }}>Capítulo I</div>
@@ -74,7 +74,7 @@ export function AboutWindow() {
 }
 
 export function ProjectsWindow({ onSelect }) {
-  const d = PORTFOLIO_DATA.projects;
+  const d = usePortfolioData().projects;
   const years = d.map((p) => Number(p.year));
   const yearRange = years.length
     ? `${Math.min(...years)} — ${Math.max(...years)}`
@@ -111,7 +111,7 @@ export function ProjectsWindow({ onSelect }) {
 }
 
 export function BlogWindow({ onSelect }) {
-  const d = PORTFOLIO_DATA.posts;
+  const d = usePortfolioData().posts;
   return (
     <div>
       <div className="kicker accent" style={{ marginBottom: 6 }}>Notas y ensayos</div>
@@ -141,7 +141,7 @@ export function BlogWindow({ onSelect }) {
 }
 
 export function ExperienceWindow() {
-  const d = PORTFOLIO_DATA.experience;
+  const d = usePortfolioData().experience;
   return (
     <div>
       <div className="kicker accent" style={{ marginBottom: 6 }}>Currículum</div>
@@ -177,7 +177,7 @@ export function ExperienceWindow() {
 }
 
 export function ContactWindow() {
-  const d = PORTFOLIO_DATA.contact;
+  const d = usePortfolioData().contact;
   return (
     <div>
       <div className="kicker accent" style={{ marginBottom: 6 }}>¿Hablamos?</div>
@@ -213,7 +213,7 @@ export function ContactWindow() {
 // ── PostWindow (notes program · SimpleText/TextEdit style) ─────────
 export function PostWindow({ post, onPrev, onNext, hasPrev, hasNext }) {
   if (!post) return null;
-  const posts = PORTFOLIO_DATA.posts;
+  const posts = usePortfolioData().posts;
   const idx = posts.findIndex((p) => p.slug === post.slug);
   const total = posts.length;
   const wordCount = useMemo(() => countWords(post), [post.slug]);

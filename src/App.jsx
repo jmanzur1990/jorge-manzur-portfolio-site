@@ -1,7 +1,9 @@
+"use client";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { PORTFOLIO_DATA } from "./data.js";
 import { BootScreen, Dock, MenuBar, Wallpaper, WindowChrome, WindowFrame } from "./desktop.jsx";
 import { ConsoleWindow } from "./console.jsx";
+import { PortfolioDataProvider, usePortfolioData } from "./portfolio-data.jsx";
 import {
   AboutWindow,
   BlogWindow,
@@ -147,7 +149,10 @@ function markBooted() {
 }
 
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(() => window.matchMedia("(max-width: 767px)").matches);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 767px)").matches;
+  });
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px)");
@@ -160,18 +165,18 @@ function useIsMobile() {
   return isMobile;
 }
 
-function parseHash() {
+function parseHash(data) {
   const hash = window.location.hash || "";
   if (!hash || hash === "#/" || hash === "#") return { kind: "home" };
   const match = hash.match(/^#\/(post|proyecto)\/([^/?#]+)$/);
   if (!match) return { kind: "unknown" };
   const slug = decodeURIComponent(match[2]);
   if (match[1] === "post") {
-    return PORTFOLIO_DATA.posts.some((p) => p.slug === slug)
+    return data.posts.some((p) => p.slug === slug)
       ? { kind: "post", slug }
       : { kind: "unknown" };
   }
-  return PORTFOLIO_DATA.projects.some((p) => p.slug === slug)
+  return data.projects.some((p) => p.slug === slug)
     ? { kind: "project", slug }
     : { kind: "unknown" };
 }
@@ -240,7 +245,8 @@ function PreferencesWindow({ prefs, setPref }) {
   );
 }
 
-export default function App() {
+function DesktopApp() {
+  const PORTFOLIO_DATA = usePortfolioData();
   const [prefs, setPref] = usePrefs();
   const isMobile = useIsMobile();
   const [booted, setBooted] = useState(getInitialBooted);
@@ -308,7 +314,7 @@ export default function App() {
 
   useEffect(() => {
     const syncFromHash = () => {
-      const state = parseHash();
+      const state = parseHash(PORTFOLIO_DATA);
       applyHashState(state);
       setNeedsHashNormalize(state.kind === "unknown");
     };
@@ -316,7 +322,7 @@ export default function App() {
     const onHashChange = () => syncFromHash();
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
-  }, [applyHashState]);
+  }, [PORTFOLIO_DATA, applyHashState]);
 
   useEffect(() => {
     if (!needsHashNormalize) return;
@@ -480,5 +486,13 @@ export default function App() {
         onFocus={isMobile ? openWindow : focusWindow}
       />
     </div>
+  );
+}
+
+export default function App({ initialData }) {
+  return (
+    <PortfolioDataProvider value={initialData}>
+      <DesktopApp />
+    </PortfolioDataProvider>
   );
 }

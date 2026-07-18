@@ -1,7 +1,5 @@
 // Portfolio content — Jorge Manzur
-import { projects, posts } from "virtual:portfolio-content";
-
-export const PORTFOLIO_DATA = {
+const STATIC_PORTFOLIO_DATA = {
   hero: {
     name: ["Jorge", "Manzur"],
     role: "Full-Stack Engineer",
@@ -22,10 +20,6 @@ export const PORTFOLIO_DATA = {
     nowReading: "‹Designing Data-Intensive Applications›",
     nowBuilding: "Un sintetizador modular en el navegador",
   },
-
-  projects,
-
-  posts,
 
   experience: [
     {
@@ -73,3 +67,13 @@ export const PORTFOLIO_DATA = {
     ],
   },
 };
+
+export function createPortfolioData(content = {}) {
+  return {
+    ...STATIC_PORTFOLIO_DATA,
+    projects: content.projects || [],
+    posts: content.posts || [],
+  };
+}
+
+export const PORTFOLIO_DATA = createPortfolioData();
