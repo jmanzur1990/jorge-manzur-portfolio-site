@@ -1,13 +1,22 @@
-import type { Metadata } from "next";
+import configPromise from "@payload-config";
+import { handleServerFunctions, RootLayout } from "@payloadcms/next/layouts";
+import type { ServerFunctionClient } from "payload";
+import { importMap } from "./admin/importMap";
 
-export const metadata: Metadata = {
-  title: "Payload Admin",
+const serverFunction: ServerFunctionClient = async (args) => {
+  "use server";
+
+  return handleServerFunctions({
+    ...args,
+    config: configPromise,
+    importMap,
+  });
 };
 
 export default function PayloadLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
-      <body>{children}</body>
-    </html>
+    <RootLayout config={configPromise} importMap={importMap} serverFunction={serverFunction}>
+      {children}
+    </RootLayout>
   );
 }
