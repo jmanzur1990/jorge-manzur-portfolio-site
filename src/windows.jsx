@@ -18,7 +18,9 @@ function formatDateEs(iso) {
 }
 
 export function HeroWindow() {
-  const d = usePortfolioData().hero;
+  const data = usePortfolioData();
+  const d = data.hero;
+  const photo = data.about.photo;
   return (
     <div>
       <div className="kicker accent" style={{ marginBottom: 14 }}>
@@ -31,7 +33,8 @@ export function HeroWindow() {
             <span className="line shift"><span className="amp"></span> {d.name[1]}</span>
           </h1>
         </div>
-        <div className="hero-portrait">
+        <div className={`hero-portrait${photo ? " has-photo" : ""}`}>
+          {photo && <img src={photo.url} alt={photo.alt || "Foto de perfil"} />}
           <div className="corner" />
         </div>
       </div>
@@ -59,9 +62,6 @@ export function AboutWindow() {
     <div>
       <div className="kicker" style={{ marginBottom: 10 }}>Capítulo I</div>
       <h2 className="display med" style={{ marginBottom: 14 }}>Sobre mí.</h2>
-      {d.photo &&
-      <img className="about-photo" src={d.photo.url} alt={d.photo.alt || "Foto de perfil"} />
-      }
       {d.paragraphs.map((p, i) =>
       <p key={i} style={{ marginBottom: 10, fontSize: 15, lineHeight: 1.5 }}>{p}</p>
       )}
