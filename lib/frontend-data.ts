@@ -1,7 +1,5 @@
 import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html";
-import { getPayload } from "payload";
-import configPromise from "../payload.config";
-import { readSeedContent } from "./content-source";
+import { createPortfolioData, STATIC_ABOUT, STATIC_CONTACT } from "../src/data.js";
 
 type PayloadProject = {
   slug: string;
@@ -26,13 +24,64 @@ type PayloadPost = {
   body: Parameters<typeof convertLexicalToHTML>[0]["data"];
 };
 
+type PayloadAbout = {
+  paragraphs?: { text?: string | null }[] | null;
+  nowPlaying?: string | null;
+  nowReading?: string | null;
+  nowBuilding?: string | null;
+} | null;
+
+type PayloadContact = {
+  email?: string | null;
+  phone?: string | null;
+  socials?: { label?: string | null; handle?: string | null }[] | null;
+} | null;
+
+type StaticAbout = typeof STATIC_ABOUT;
+type StaticContact = typeof STATIC_CONTACT;
+
+export function normalizeAbout(doc: PayloadAbout): StaticAbout {
+  const paragraphs = Array.isArray(doc?.paragraphs)
+    ? doc.paragraphs.map((row) => row.text?.trim()).filter(isNonEmptyString)
+    : [];
+
+  return {
+    paragraphs: paragraphs.length ? paragraphs : STATIC_ABOUT.paragraphs,
+    nowPlaying: normalizeString(doc?.nowPlaying, STATIC_ABOUT.nowPlaying),
+    nowReading: normalizeString(doc?.nowReading, STATIC_ABOUT.nowReading),
+    nowBuilding: normalizeString(doc?.nowBuilding, STATIC_ABOUT.nowBuilding),
+  };
+}
+
+export function normalizeContact(doc: PayloadContact): StaticContact {
+  const socials = Array.isArray(doc?.socials)
+    ? doc.socials
+        .map((row) => ({
+          label: row.label?.trim() || "",
+          handle: row.handle?.trim() || "",
+        }))
+        .filter((row) => row.label && row.handle)
+    : [];
+
+  return {
+    email: normalizeString(doc?.email, STATIC_CONTACT.email),
+    phone: normalizeString(doc?.phone, STATIC_CONTACT.phone),
+    socials: socials.length ? socials : STATIC_CONTACT.socials,
+  };
+}
+
 export async function getFrontendPortfolioData() {
   if (!process.env.DATABASE_URL) {
-    return fromSeedFiles();
+    const { readSeedContent } = await import("./content-source");
+    return createPortfolioData(fromSeedFiles(readSeedContent()));
   }
 
+  const [{ getPayload }, { default: configPromise }] = await Promise.all([
+    import("payload"),
+    import("../payload.config"),
+  ]);
   const payload = await getPayload({ config: configPromise });
-  const [projectsResult, postsResult] = await Promise.all([
+  const [projectsResult, postsResult, aboutResult, contactResult] = await Promise.all([
     payload.find({
       collection: "projects",
       depth: 0,
@@ -45,6 +94,8 @@ export async function getFrontendPortfolioData() {
       limit: 100,
       sort: "-date",
     }),
+    findGlobalWithFallback(payload, "about"),
+    findGlobalWithFallback(payload, "contact"),
   ]);
 
   const projects = (projectsResult.docs as unknown as PayloadProject[]).map((project, index) => ({
@@ -73,11 +124,15 @@ export async function getFrontendPortfolioData() {
     bodyText: lexicalPlainText(post.body),
   }));
 
-  return { projects, posts };
+  return createPortfolioData({
+    about: normalizeAbout(aboutResult as PayloadAbout),
+    contact: normalizeContact(contactResult as PayloadContact),
+    projects,
+    posts,
+  });
 }
 
-function fromSeedFiles() {
-  const seed = readSeedContent();
+function fromSeedFiles(seed: ReturnType<typeof import("./content-source").readSeedContent>) {
   return {
     projects: seed.projects.map((project, index) => ({
       ...project,
@@ -86,6 +141,24 @@ function fromSeedFiles() {
     })),
     posts: seed.posts.map(({ body: _body, bodyLexical: _bodyLexical, ...post }) => post),
   };
+}
+
+async function findGlobalWithFallback(payload: Awaited<ReturnType<typeof import("payload").getPayload>>, slug: "about" | "contact") {
+  try {
+    return await payload.findGlobal({ slug });
+  } catch (error) {
+    console.warn(`Payload global "${slug}" could not be loaded. Falling back to static content.`, error);
+    return null;
+  }
+}
+
+function normalizeString(value: string | null | undefined, fallback: string) {
+  const trimmed = value?.trim();
+  return trimmed || fallback;
+}
+
+function isNonEmptyString(value: string | undefined): value is string {
+  return Boolean(value);
 }
 
 function decoratePostHtml(html: string) {

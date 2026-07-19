@@ -8,6 +8,8 @@ import { Media } from "./collections/Media";
 import { Posts } from "./collections/Posts";
 import { Projects } from "./collections/Projects";
 import { Users } from "./collections/Users";
+import { About } from "./globals/About";
+import { Contact } from "./globals/Contact";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -43,6 +45,7 @@ export default buildConfig({
     },
   },
   collections: [Users, Media, Projects, Posts],
+  globals: [About, Contact],
   db: postgresAdapter({
     pool: {
       connectionString: databaseURL,

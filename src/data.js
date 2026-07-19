@@ -68,9 +68,14 @@ const STATIC_PORTFOLIO_DATA = {
   },
 };
 
+export const STATIC_ABOUT = STATIC_PORTFOLIO_DATA.about;
+export const STATIC_CONTACT = STATIC_PORTFOLIO_DATA.contact;
+
 export function createPortfolioData(content = {}) {
   return {
     ...STATIC_PORTFOLIO_DATA,
+    about: content.about || STATIC_ABOUT,
+    contact: content.contact || STATIC_CONTACT,
     projects: content.projects || [],
     posts: content.posts || [],
   };

@@ -44,3 +44,15 @@ New issue: [PLAN.md](</Users/jorgemanzur/dev/jorge_manzur-portfilio-site/PLAN.md
 Minor correction: use an explicit test command compatible with TS imports, e.g. `tsx --test` or `node --import tsx --test`, and add it to `package.json`; don’t rely on an unspecified “node --test file” path.
 
 VERDICT: APPROVED
+## Act 3 — Build
+### Round 1 — Codex build (thread 019f7ada-c2eb-7383-85b5-cc278babba09, gpt-5.5)
+Implemented full spec: globals/About.ts + globals/Contact.ts, registered in payload.config.ts,
+exported per-field normalizers in lib/frontend-data.ts with try/catch findGlobal fallback,
+STATIC_ABOUT/STATIC_CONTACT exports in src/data.js, generated payload-types.ts,
+generate:importmap ran (no changes needed), tests/frontend-data-normalizers.test.js (5 cases) + tests/index.js.
+Deviations reported: payload-types.ts is 523 generated lines (accepted); no DB/schema-push run (per constraint).
+### Claude's verdict (Round 1)
+Read full diff + new files. Faithful to spec; scope respected (windows.jsx/App.jsx untouched).
+Noted: static payload imports converted to dynamic imports in lib/frontend-data.ts so tests can load
+normalizers without a DB — acceptable. Double-wrap of createPortfolioData in PortfolioDataProvider is
+idempotent — verified safe. Proof re-run by Claude: build ✓, 5/5 tests ✓. PASSED — no fix rounds needed.
