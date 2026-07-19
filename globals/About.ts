@@ -4,6 +4,11 @@ export const About: GlobalConfig = {
   slug: "about",
   fields: [
     {
+      name: "photo",
+      type: "upload",
+      relationTo: "media",
+    },
+    {
       name: "paragraphs",
       type: "array",
       fields: [

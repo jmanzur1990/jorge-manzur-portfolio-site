@@ -58,6 +58,7 @@ test("normalizers merge mixed partial content per field", () => {
     nowReading: "",
     nowBuilding: "Patch bay",
   }), {
+    photo: null,
     paragraphs: ["Uno", "Dos"],
     nowPlaying: "Aphex Twin",
     nowReading: STATIC_ABOUT.nowReading,
@@ -77,4 +78,17 @@ test("normalizers merge mixed partial content per field", () => {
     phone: STATIC_CONTACT.phone,
     socials: [{ label: "GitHub", handle: "@jorge" }],
   });
+});
+
+test("normalizeAbout maps a populated photo upload", () => {
+  const result = normalizeAbout({
+    photo: { url: " https://blob.example.com/foto.webp ", alt: " Jorge " },
+    paragraphs: null,
+  });
+  assert.deepEqual(result.photo, { url: "https://blob.example.com/foto.webp", alt: "Jorge" });
+  assert.deepEqual(result.paragraphs, STATIC_ABOUT.paragraphs);
+});
+
+test("normalizeAbout ignores an unpopulated photo id", () => {
+  assert.equal(normalizeAbout({ photo: 3 }).photo, null);
 });

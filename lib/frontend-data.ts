@@ -25,6 +25,7 @@ type PayloadPost = {
 };
 
 type PayloadAbout = {
+  photo?: { url?: string | null; alt?: string | null } | number | null;
   paragraphs?: { text?: string | null }[] | null;
   nowPlaying?: string | null;
   nowReading?: string | null;
@@ -37,15 +38,20 @@ type PayloadContact = {
   socials?: { label?: string | null; handle?: string | null }[] | null;
 } | null;
 
-type StaticAbout = typeof STATIC_ABOUT;
+type AboutPhoto = { url: string; alt: string } | null;
+type StaticAbout = Omit<typeof STATIC_ABOUT, "photo"> & { photo: AboutPhoto };
 type StaticContact = typeof STATIC_CONTACT;
 
 export function normalizeAbout(doc: PayloadAbout): StaticAbout {
   const paragraphs = Array.isArray(doc?.paragraphs)
     ? doc.paragraphs.map((row) => row.text?.trim()).filter(isNonEmptyString)
     : [];
+  const photoDoc = doc?.photo && typeof doc.photo === "object" ? doc.photo : null;
+  const photoUrl = photoDoc?.url?.trim();
+  const photo: AboutPhoto = photoUrl ? { url: photoUrl, alt: photoDoc?.alt?.trim() || "" } : null;
 
   return {
+    photo,
     paragraphs: paragraphs.length ? paragraphs : STATIC_ABOUT.paragraphs,
     nowPlaying: normalizeString(doc?.nowPlaying, STATIC_ABOUT.nowPlaying),
     nowReading: normalizeString(doc?.nowReading, STATIC_ABOUT.nowReading),

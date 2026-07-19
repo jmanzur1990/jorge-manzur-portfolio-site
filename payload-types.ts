@@ -434,6 +434,7 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface About {
   id: number;
+  photo?: (number | null) | Media;
   paragraphs?:
     | {
         text: string;
@@ -469,6 +470,7 @@ export interface Contact {
  * via the `definition` "about_select".
  */
 export interface AboutSelect<T extends boolean = true> {
+  photo?: T;
   paragraphs?:
     | T
     | {

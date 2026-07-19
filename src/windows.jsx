@@ -59,6 +59,9 @@ export function AboutWindow() {
     <div>
       <div className="kicker" style={{ marginBottom: 10 }}>Capítulo I</div>
       <h2 className="display med" style={{ marginBottom: 14 }}>Sobre mí.</h2>
+      {d.photo &&
+      <img className="about-photo" src={d.photo.url} alt={d.photo.alt || "Foto de perfil"} />
+      }
       {d.paragraphs.map((p, i) =>
       <p key={i} style={{ marginBottom: 10, fontSize: 15, lineHeight: 1.5 }}>{p}</p>
       )}

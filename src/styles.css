@@ -1377,3 +1377,13 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+.about-photo {
+  float: right;
+  width: 110px;
+  height: 135px;
+  object-fit: cover;
+  border: 1.5px solid var(--rule);
+  margin: 0 0 10px 14px;
+  filter: grayscale(20%) contrast(1.05);
+}

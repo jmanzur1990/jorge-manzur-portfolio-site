@@ -12,6 +12,7 @@ const STATIC_PORTFOLIO_DATA = {
   },
 
   about: {
+    photo: null,
     paragraphs: [
       "Empecé a programar en una PC Pentium II que heredé de mi tío. Veintidós años después, sigo creyendo que la web es el medio más fascinante que se inventó en mi vida.",
       "Hoy trabajo en stacks completos: APIs en Go, interfaces en React, despliegues en cualquier nube que no me complique demasiado. Me gustan los problemas largos, las bases de datos relacionales, y los proyectos donde el código vive más de tres años.",
